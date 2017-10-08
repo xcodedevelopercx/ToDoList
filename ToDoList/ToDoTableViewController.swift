@@ -15,11 +15,13 @@ class ToDoTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
+        if let savedToDos = ToDo.loadToDos() {
+            toDos = savedToDos
+        } else {
+            toDos = ToDo.loadSampleToDos()
+        }
+        navigationItem.leftBarButtonItem = editButtonItem
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -48,7 +50,31 @@ class ToDoTableViewController: UITableViewController {
         return cell
     }
     
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
 
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            toDos.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: UITableViewRowAnimation.bottom)
+
+        }
+        
+    }
+    
+    @IBAction func unwindToToDoList(segue: UIStoryboardSegue) {
+        guard segue.identifier == "saveUnwind" else { return }
+        
+        let sourceViewController = segue.source as! ToDoViewController
+        
+        if let toDo = sourceViewController.toDo {
+            let newIndexPath = IndexPath(row: toDos.count, section: 0)
+            toDos.append(toDo)
+            tableView.insertRows(at: [newIndexPath], with: .automatic)
+        }
+    }
+    
     /*
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
